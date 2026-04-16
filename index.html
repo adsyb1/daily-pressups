@@ -44,6 +44,7 @@
     html {
       height: 100%;
       overflow: hidden;
+      overscroll-behavior: none;
     }
 
     body {
@@ -57,6 +58,7 @@
       -webkit-font-smoothing: antialiased;
       overflow: hidden;
       overscroll-behavior: none;
+      touch-action: pan-y;
       position: fixed;
       top: 0;
       left: 0;
@@ -495,10 +497,21 @@
         handleAdd();
       });
 
-      // Prevent horizontal swipe and bounce — allow vertical scroll only in sessions list
+      // Block all horizontal swipes; allow vertical scroll only in sessions list
+      let touchStartX = 0;
+      let touchStartY = 0;
+      document.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+
       document.addEventListener('touchmove', (e) => {
+        const dx = Math.abs(e.touches[0].clientX - touchStartX);
+        const dy = Math.abs(e.touches[0].clientY - touchStartY);
         const sessionsEl = document.querySelector('.sessions-section');
-        if (!sessionsEl.contains(e.target)) {
+        const inSessions = sessionsEl.contains(e.target);
+
+        if (!inSessions || dx > dy) {
           e.preventDefault();
         }
       }, { passive: false });
