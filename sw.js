@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pressups-v1';
+const CACHE_NAME = 'pressups-v2';
 const ASSETS = [
   '/daily-pressups/',
   '/daily-pressups/index.html',
