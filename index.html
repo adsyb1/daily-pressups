@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pressups">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Daily Pressups</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --slate-950: #0f172a;
+      --slate-900: #1e293b;
+      --slate-800: #334155;
+      --slate-700: #475569;
+      --slate-500: #64748b;
+      --slate-400: #94a3b8;
+      --slate-300: #cbd5e1;
+      --slate-100: #f1f5f9;
+      --emerald-400: #34d399;
+      --emerald-500: #10b981;
+      --emerald-600: #059669;
+      --amber-400: #fbbf24;
+      --red-400: #f87171;
+      --font-body: 'DM Sans', system-ui, sans-serif;
+      --font-mono: 'DM Mono', ui-monospace, monospace;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    html {
+      height: 100%;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--slate-950);
+      color: var(--slate-100);
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding-top: var(--safe-top);
+      padding-bottom: var(--safe-bottom);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 20px 20px 0;
+      text-align: center;
+    }
+
+    header h1 {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--slate-500);
+    }
+
+    /* ── Today total ── */
+    .today-total {
+      text-align: center;
+      padding: 32px 20px 8px;
+    }
+
+    .today-total .count {
+      font-family: var(--font-mono);
+      font-size: 80px;
+      font-weight: 500;
+      line-height: 1;
+      color: var(--emerald-400);
+      transition: transform 0.15s ease;
+    }
+
+    .today-total .count.bump {
+      transform: scale(1.08);
+    }
+
+    .today-total .label {
+      font-size: 13px;
+      color: var(--slate-500);
+      margin-top: 6px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .today-date {
+      text-align: center;
+      font-size: 13px;
+      color: var(--slate-700);
+      padding-bottom: 24px;
+    }
+
+    /* ── Input area ── */
+    .input-area {
+      padding: 0 20px 24px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .input-area input {
+      flex: 1;
+      background: var(--slate-900);
+      border: 2px solid var(--slate-800);
+      border-radius: 14px;
+      padding: 16px 18px;
+      font-family: var(--font-mono);
+      font-size: 22px;
+      color: var(--slate-100);
+      outline: none;
+      text-align: center;
+      transition: border-color 0.2s ease;
+    }
+
+    .input-area input::placeholder {
+      color: var(--slate-700);
+      font-size: 16px;
+    }
+
+    .input-area input:focus {
+      border-color: var(--emerald-500);
+    }
+
+    .input-area button {
+      background: var(--emerald-500);
+      color: var(--slate-950);
+      border: none;
+      border-radius: 14px;
+      padding: 16px 28px;
+      font-family: var(--font-body);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+      white-space: nowrap;
+    }
+
+    .input-area button:active {
+      background: var(--emerald-600);
+      transform: scale(0.96);
+    }
+
+    /* ── Sessions list ── */
+    .sessions-section {
+      flex: 1;
+      padding: 0 20px;
+      overflow-y: auto;
+    }
+
+    .sessions-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .sessions-header h2 {
+      font-size: 13px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--slate-500);
+    }
+
+    .sessions-header .session-count {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--slate-700);
+    }
+
+    .sessions-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-bottom: 24px;
+    }
+
+    .session-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--slate-900);
+      border-radius: 12px;
+      padding: 14px 16px;
+      animation: slideIn 0.25s ease-out;
+    }
+
+    .session-item .session-count-val {
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--slate-100);
+    }
+
+    .session-item .session-time {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--slate-600);
+    }
+
+    .session-item .session-delete {
+      background: none;
+      border: none;
+      color: var(--slate-800);
+      font-size: 18px;
+      padding: 4px 8px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    .session-item .session-delete:active {
+      color: var(--red-400);
+      background: rgba(248, 113, 113, 0.1);
+    }
+
+    .session-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--slate-700);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .empty-state .empty-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: calc(24px + var(--safe-bottom));
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--slate-800);
+      color: var(--slate-100);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Pressups</h1>
+  </header>
+
+  <div class="today-total">
+    <div class="count" id="totalCount">0</div>
+    <div class="label">today</div>
+  </div>
+  <div class="today-date" id="todayDate"></div>
+
+  <div class="input-area">
+    <input type="number" id="repInput" inputmode="numeric" pattern="[0-9]*" placeholder="reps" autocomplete="off">
+    <button id="addBtn">Add</button>
+  </div>
+
+  <div class="sessions-section">
+    <div class="sessions-header">
+      <h2>Sessions</h2>
+      <span class="session-count" id="sessionCount"></span>
+    </div>
+    <ul class="sessions-list" id="sessionsList"></ul>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div class="empty-icon">💪</div>
+      Get after it — add your first set
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = 'daily-pressups-v1';
+
+      // ── Elements ──
+      const totalCountEl = document.getElementById('totalCount');
+      const todayDateEl = document.getElementById('todayDate');
+      const repInput = document.getElementById('repInput');
+      const addBtn = document.getElementById('addBtn');
+      const sessionsList = document.getElementById('sessionsList');
+      const sessionCountEl = document.getElementById('sessionCount');
+      const emptyState = document.getElementById('emptyState');
+      const toastEl = document.getElementById('toast');
+
+      // ── Helpers ──
+      function getLocalDate() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      function formatDate(dateStr) {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const date = new Date(y, m - 1, d);
+        return date.toLocaleDateString('en-GB', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long'
+        });
+      }
+
+      function formatTime(isoString) {
+        const date = new Date(isoString);
+        return date.toLocaleTimeString('en-GB', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+
+      function generateId() {
+        return Date.now() + '-' + Math.random().toString(36).substring(2, 7);
+      }
+
+      // ── Data ──
+      function loadAllEntries() {
+        try {
+          return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveAllEntries(entries) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+      }
+
+      function getTodayEntries() {
+        const today = getLocalDate();
+        return loadAllEntries().filter(e => e.date === today);
+      }
+
+      function addEntry(count) {
+        const entries = loadAllEntries();
+        const now = new Date();
+        entries.push({
+          id: generateId(),
+          count: count,
+          timestamp: now.toISOString(),
+          date: getLocalDate()
+        });
+        saveAllEntries(entries);
+      }
+
+      function deleteEntry(id) {
+        const entries = loadAllEntries().filter(e => e.id !== id);
+        saveAllEntries(entries);
+      }
+
+      // ── Toast ──
+      let toastTimer;
+      function showToast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2000);
+      }
+
+      // ── Render ──
+      function render() {
+        const today = getLocalDate();
+        todayDateEl.textContent = formatDate(today);
+
+        const entries = getTodayEntries();
+        const total = entries.reduce((sum, e) => sum + e.count, 0);
+
+        totalCountEl.textContent = total;
+        sessionCountEl.textContent = entries.length === 1
+          ? '1 set'
+          : `${entries.length} sets`;
+
+        if (entries.length === 0) {
+          sessionsList.innerHTML = '';
+          emptyState.style.display = 'block';
+          sessionCountEl.textContent = '';
+          return;
+        }
+
+        emptyState.style.display = 'none';
+
+        // Show most recent first
+        const sorted = [...entries].reverse();
+        sessionsList.innerHTML = sorted.map(entry => `
+          <li class="session-item" data-id="${entry.id}">
+            <span class="session-count-val">${entry.count}</span>
+            <div class="session-right">
+              <span class="session-time">${formatTime(entry.timestamp)}</span>
+              <button class="session-delete" aria-label="Delete" onclick="window._deleteEntry('${entry.id}')">✕</button>
+            </div>
+          </li>
+        `).join('');
+      }
+
+      // ── Actions ──
+      function handleAdd() {
+        const val = parseInt(repInput.value, 10);
+        if (!val || val <= 0) {
+          repInput.focus();
+          return;
+        }
+
+        addEntry(val);
+        repInput.value = '';
+        repInput.focus();
+
+        // Bump animation
+        totalCountEl.classList.add('bump');
+        setTimeout(() => totalCountEl.classList.remove('bump'), 150);
+
+        showToast(`+${val}`);
+        render();
+      }
+
+      window._deleteEntry = function(id) {
+        const entry = loadAllEntries().find(e => e.id === id);
+        if (entry) {
+          deleteEntry(id);
+          showToast(`−${entry.count}`);
+          render();
+        }
+      };
+
+      // ── Events ──
+      addBtn.addEventListener('click', handleAdd);
+
+      repInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleAdd();
+        }
+      });
+
+      // Prevent zoom on double-tap of button
+      addBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        handleAdd();
+      });
+
+      // ── Init ──
+      render();
+      repInput.focus();
+
+      // ── Service Worker ──
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      }
+    })();
+  </script>
+</body>
+</html>
