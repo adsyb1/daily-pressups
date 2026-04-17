@@ -96,12 +96,47 @@
       transition: color 0.2s ease;
     }
 
-    .sync-btn:active { background: var(--slate-900); }
-    .sync-btn.synced { color: var(--emerald-500); }
+    .sync-btn:active  { background: var(--slate-900); }
+    .sync-btn.synced  { color: var(--emerald-500); }
     .sync-btn.syncing { color: var(--amber-400); }
-    .sync-btn.error { color: var(--red-400); }
+    .sync-btn.error   { color: var(--red-400); }
 
-    /* ── Today total ── */
+    /* ── Tab bar ── */
+    .tab-bar {
+      display: flex;
+      padding: 12px 20px 0;
+    }
+
+    .tab-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 8px 0 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--slate-600);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .tab-btn.active {
+      color: var(--emerald-400);
+      border-bottom-color: var(--emerald-400);
+    }
+
+    /* ── Today view ── */
+    #todayView {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+    }
+
     .today-total {
       text-align: center;
       padding: 32px 20px 8px;
@@ -145,7 +180,6 @@
     .input-area input {
       flex: 1 1 0;
       min-width: 0;
-      width: 100%;
       background: var(--slate-900);
       border: 2px solid var(--slate-800);
       border-radius: 14px;
@@ -198,6 +232,7 @@
     /* ── Sessions list ── */
     .sessions-section {
       flex: 1;
+      min-height: 0;
       padding: 0 20px;
       overflow-x: hidden;
       overflow-y: auto;
@@ -294,15 +329,125 @@
     }
 
     @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-8px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
+
+    /* ── Stats view ── */
+    #statsView {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 20px 20px 10px;
+    }
+
+    .stat-card {
+      background: var(--slate-900);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 36px;
+      font-weight: 500;
+      line-height: 1;
+      color: var(--slate-100);
+      margin-bottom: 6px;
+    }
+
+    .stat-value.emerald { color: var(--emerald-400); }
+
+    .stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--slate-500);
+    }
+
+    .stat-delta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      margin-top: 5px;
+    }
+
+    .stat-delta.up   { color: var(--emerald-500); }
+    .stat-delta.down { color: var(--red-400); }
+
+    /* ── Bar chart ── */
+    .chart-section {
+      padding: 10px 20px 32px;
+    }
+
+    .chart-title {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--slate-500);
+      margin-bottom: 16px;
+    }
+
+    .chart-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 110px;
+      margin-bottom: 8px;
+    }
+
+    .bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      height: 100%;
+      gap: 3px;
+    }
+
+    .bar-count {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--slate-600);
+      text-align: center;
+      min-height: 11px;
+      line-height: 11px;
+    }
+
+    .bar-count.today { color: var(--emerald-400); }
+
+    .bar {
+      width: 100%;
+      background: var(--slate-800);
+      border-radius: 3px 3px 0 0;
+    }
+
+    .bar.today { background: var(--emerald-500); }
+
+    .chart-days {
+      display: flex;
+      gap: 6px;
+    }
+
+    .bar-day-label {
+      flex: 1;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--slate-600);
+      text-transform: uppercase;
+    }
+
+    .bar-day-label.today { color: var(--emerald-400); }
 
     /* ── Toast ── */
     .toast {
@@ -335,26 +480,61 @@
     <button id="syncBtn" class="sync-btn" aria-label="Connect Google Sheets">connect</button>
   </header>
 
-  <div class="today-total">
-    <div class="count" id="totalCount">0</div>
-    <div class="label">today</div>
-  </div>
-  <div class="today-date" id="todayDate"></div>
-
-  <div class="input-area">
-    <input type="number" id="repInput" inputmode="numeric" pattern="[0-9]*" placeholder="reps" autocomplete="off">
-    <button id="addBtn">Add</button>
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabToday">Today</button>
+    <button class="tab-btn" id="tabStats">Stats</button>
   </div>
 
-  <div class="sessions-section">
-    <div class="sessions-header">
-      <h2>Sessions</h2>
-      <span class="session-count" id="sessionCount"></span>
+  <div id="todayView">
+    <div class="today-total">
+      <div class="count" id="totalCount">0</div>
+      <div class="label">today</div>
     </div>
-    <ul class="sessions-list" id="sessionsList"></ul>
-    <div class="empty-state" id="emptyState" style="display:none;">
-      <div class="empty-icon">💪</div>
-      Get after it — add your first set
+    <div class="today-date" id="todayDate"></div>
+
+    <div class="input-area">
+      <input type="number" id="repInput" inputmode="numeric" pattern="[0-9]*" placeholder="reps" autocomplete="off">
+      <button id="addBtn">Add</button>
+    </div>
+
+    <div class="sessions-section">
+      <div class="sessions-header">
+        <h2>Sessions</h2>
+        <span class="session-count" id="sessionCount"></span>
+      </div>
+      <ul class="sessions-list" id="sessionsList"></ul>
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <div class="empty-icon">💪</div>
+        Get after it — add your first set
+      </div>
+    </div>
+  </div>
+
+  <div id="statsView" style="display:none;">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value emerald" id="statStreak">0</div>
+        <div class="stat-label">day streak</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statAllTime">0</div>
+        <div class="stat-label">all time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statBest">0</div>
+        <div class="stat-label">best day</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statThisWeek">0</div>
+        <div class="stat-label">this week</div>
+        <div class="stat-delta" id="statWeekDelta"></div>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-title">Last 7 days</div>
+      <div class="chart-bars" id="chartBars"></div>
+      <div class="chart-days" id="chartDays"></div>
     </div>
   </div>
 
@@ -362,47 +542,66 @@
 
   <script>
     (() => {
-      const STORAGE_KEY = 'daily-pressups-v1';
-      const SHEET_ID_KEY = 'daily-pressups-sheet-id';
+      const STORAGE_KEY      = 'daily-pressups-v1';
+      const SHEET_ID_KEY     = 'daily-pressups-sheet-id';
       const SHEET_TAB_ID_KEY = 'daily-pressups-sheet-tab-id';
-      const CLIENT_ID = '864950086095-8uc416m7ts9hbbmpp0g5dlhd1rjqfs0f.apps.googleusercontent.com';
-      const SCOPE = 'https://www.googleapis.com/auth/drive.file';
+      const CLIENT_ID        = '864950086095-8uc416m7ts9hbbmpp0g5dlhd1rjqfs0f.apps.googleusercontent.com';
+      const SCOPE            = 'https://www.googleapis.com/auth/drive.file';
 
       // ── Elements ──
-      const totalCountEl = document.getElementById('totalCount');
-      const todayDateEl = document.getElementById('todayDate');
-      const repInput = document.getElementById('repInput');
-      const addBtn = document.getElementById('addBtn');
-      const sessionsList = document.getElementById('sessionsList');
+      const totalCountEl  = document.getElementById('totalCount');
+      const todayDateEl   = document.getElementById('todayDate');
+      const repInput      = document.getElementById('repInput');
+      const addBtn        = document.getElementById('addBtn');
+      const sessionsList  = document.getElementById('sessionsList');
       const sessionCountEl = document.getElementById('sessionCount');
-      const emptyState = document.getElementById('emptyState');
-      const toastEl = document.getElementById('toast');
-      const syncBtn = document.getElementById('syncBtn');
+      const emptyState    = document.getElementById('emptyState');
+      const toastEl       = document.getElementById('toast');
+      const syncBtn       = document.getElementById('syncBtn');
 
-      // ── Helpers ──
+      // ── Date helpers ──
       function getLocalDate() {
         const now = new Date();
-        const y = now.getFullYear();
-        const m = String(now.getMonth() + 1).padStart(2, '0');
-        const d = String(now.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
+        return [
+          now.getFullYear(),
+          String(now.getMonth() + 1).padStart(2, '0'),
+          String(now.getDate()).padStart(2, '0'),
+        ].join('-');
+      }
+
+      function dateOffset(dateStr, days) {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const date = new Date(y, m - 1, d);
+        date.setDate(date.getDate() + days);
+        return [
+          date.getFullYear(),
+          String(date.getMonth() + 1).padStart(2, '0'),
+          String(date.getDate()).padStart(2, '0'),
+        ].join('-');
+      }
+
+      function getWeekStart(dateStr) {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const date = new Date(y, m - 1, d);
+        const day = date.getDay();
+        date.setDate(date.getDate() + (day === 0 ? -6 : 1 - day));
+        return [
+          date.getFullYear(),
+          String(date.getMonth() + 1).padStart(2, '0'),
+          String(date.getDate()).padStart(2, '0'),
+        ].join('-');
       }
 
       function formatDate(dateStr) {
         const [y, m, d] = dateStr.split('-').map(Number);
-        const date = new Date(y, m - 1, d);
-        return date.toLocaleDateString('en-GB', {
-          weekday: 'long',
-          day: 'numeric',
-          month: 'long'
+        return new Date(y, m - 1, d).toLocaleDateString('en-GB', {
+          weekday: 'long', day: 'numeric', month: 'long',
         });
       }
 
       function formatTime(isoString) {
-        const date = new Date(isoString);
-        return date.toLocaleTimeString('en-GB', {
-          hour: '2-digit',
-          minute: '2-digit'
+        return new Date(isoString).toLocaleTimeString('en-GB', {
+          hour: '2-digit', minute: '2-digit',
         });
       }
 
@@ -410,13 +609,10 @@
         return Date.now() + '-' + Math.random().toString(36).substring(2, 7);
       }
 
-      // ── Data (localStorage: source of truth for UI, Sheets: sync target) ──
+      // ── Data ──
       function loadAllEntries() {
-        try {
-          return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        } catch {
-          return [];
-        }
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+        catch { return []; }
       }
 
       function saveAllEntries(entries) {
@@ -430,12 +626,11 @@
 
       function addEntry(count) {
         const entries = loadAllEntries();
-        const now = new Date();
         const entry = {
           id: generateId(),
-          count: count,
-          timestamp: now.toISOString(),
-          date: getLocalDate()
+          count,
+          timestamp: new Date().toISOString(),
+          date: getLocalDate(),
         };
         entries.push(entry);
         saveAllEntries(entries);
@@ -444,25 +639,19 @@
       }
 
       function deleteEntry(id) {
-        const entries = loadAllEntries().filter(e => e.id !== id);
-        saveAllEntries(entries);
+        saveAllEntries(loadAllEntries().filter(e => e.id !== id));
         syncDelete(id);
       }
 
       // ── Google Sheets sync ──
-      let tokenClient = null;
-      let accessToken = null;
+      let tokenClient  = null;
+      let accessToken  = null;
       let spreadsheetId = localStorage.getItem(SHEET_ID_KEY);
-      let sheetTabId = Number(localStorage.getItem(SHEET_TAB_ID_KEY)) || 0;
+      let sheetTabId    = Number(localStorage.getItem(SHEET_TAB_ID_KEY)) || 0;
 
       function setSyncState(state) {
-        const labels = {
-          disconnected: 'connect',
-          syncing: 'syncing…',
-          synced: '● synced',
-          error: 'retry',
-        };
-        syncBtn.className = 'sync-btn ' + state;
+        const labels = { disconnected: 'connect', syncing: 'syncing…', synced: '● synced', error: 'retry' };
+        syncBtn.className  = 'sync-btn ' + state;
         syncBtn.textContent = labels[state] || 'connect';
       }
 
@@ -470,15 +659,9 @@
         if (!accessToken) throw new Error('no-token');
         const res = await fetch(url, {
           ...opts,
-          headers: {
-            ...(opts.headers || {}),
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { ...(opts.headers || {}), Authorization: `Bearer ${accessToken}` },
         });
-        if (res.status === 401) {
-          accessToken = null;
-          throw new Error('auth');
-        }
+        if (res.status === 401) { accessToken = null; throw new Error('auth'); }
         if (!res.ok) throw new Error(`sheets-${res.status}`);
         return res.status === 204 ? null : res.json();
       }
@@ -491,19 +674,15 @@
             properties: { title: 'Daily Pressups' },
             sheets: [{
               properties: { title: 'Entries' },
-              data: [{
-                rowData: [{
-                  values: ['id', 'count', 'timestamp', 'date'].map(h => ({
-                    userEnteredValue: { stringValue: h },
-                    userEnteredFormat: { textFormat: { bold: true } }
-                  }))
-                }]
-              }]
-            }]
+              data: [{ rowData: [{ values: ['id','count','timestamp','date'].map(h => ({
+                userEnteredValue: { stringValue: h },
+                userEnteredFormat: { textFormat: { bold: true } },
+              }))}]}],
+            }],
           }),
         });
         spreadsheetId = data.spreadsheetId;
-        sheetTabId = data.sheets[0].properties.sheetId;
+        sheetTabId    = data.sheets[0].properties.sheetId;
         localStorage.setItem(SHEET_ID_KEY, spreadsheetId);
         localStorage.setItem(SHEET_TAB_ID_KEY, String(sheetTabId));
       }
@@ -512,12 +691,8 @@
         const data = await sheetsFetch(
           `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Entries!A2:D`
         );
-        const rows = (data && data.values) || [];
-        return rows.map(([id, count, timestamp, date]) => ({
-          id,
-          count: parseInt(count, 10),
-          timestamp,
-          date,
+        return ((data && data.values) || []).map(([id, count, timestamp, date]) => ({
+          id, count: parseInt(count, 10), timestamp, date,
         }));
       }
 
@@ -528,9 +703,7 @@
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              values: entries.map(e => [e.id, e.count, e.timestamp, e.date]),
-            }),
+            body: JSON.stringify({ values: entries.map(e => [e.id, e.count, e.timestamp, e.date]) }),
           }
         );
       }
@@ -539,26 +712,17 @@
         const remote = await readAllFromSheets();
         const idx = remote.findIndex(e => e.id === id);
         if (idx === -1) return;
-        const rowIndex = idx + 1; // +1 to skip header (0-based)
-        await sheetsFetch(
-          `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              requests: [{
-                deleteDimension: {
-                  range: {
-                    sheetId: sheetTabId,
-                    dimension: 'ROWS',
-                    startIndex: rowIndex,
-                    endIndex: rowIndex + 1,
-                  },
-                },
-              }],
-            }),
-          }
-        );
+        const rowIndex = idx + 1;
+        await sheetsFetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            requests: [{ deleteDimension: { range: {
+              sheetId: sheetTabId, dimension: 'ROWS',
+              startIndex: rowIndex, endIndex: rowIndex + 1,
+            }}}],
+          }),
+        });
       }
 
       function syncAppend(entry) {
@@ -588,9 +752,10 @@
             const remote = await readAllFromSheets();
             saveAllEntries(remote);
             render();
+            if (activeTab === 'stats') renderStats();
           }
           setSyncState('synced');
-        } catch (e) {
+        } catch {
           setSyncState('error');
         }
       }
@@ -601,33 +766,123 @@
           client_id: CLIENT_ID,
           scope: SCOPE,
           callback: (resp) => {
-            if (resp.error || !resp.access_token) {
-              setSyncState('disconnected');
-              return;
-            }
+            if (resp.error || !resp.access_token) { setSyncState('disconnected'); return; }
             accessToken = resp.access_token;
             onSignedIn();
           },
           error_callback: () => setSyncState('disconnected'),
         });
-        // Try silent auth if we've connected before
         if (spreadsheetId) {
           try { tokenClient.requestAccessToken({ prompt: '' }); } catch {}
         }
       }
 
-      // Poll for the GIS library to load
       const gisCheck = setInterval(() => {
-        if (window.google && window.google.accounts) {
-          clearInterval(gisCheck);
-          initGoogleAuth();
-        }
+        if (window.google && window.google.accounts) { clearInterval(gisCheck); initGoogleAuth(); }
       }, 100);
 
       syncBtn.addEventListener('click', () => {
         if (!tokenClient) return;
         tokenClient.requestAccessToken({ prompt: accessToken ? '' : 'consent' });
       });
+
+      // ── Stats ──
+      function computeStats(allEntries) {
+        const today = getLocalDate();
+
+        const byDate = {};
+        allEntries.forEach(e => { byDate[e.date] = (byDate[e.date] || 0) + e.count; });
+
+        const allTimeTotal = allEntries.reduce((sum, e) => sum + e.count, 0);
+        const bestDay = Object.values(byDate).reduce((a, b) => Math.max(a, b), 0);
+
+        // Streak: consecutive days ending on today or yesterday
+        let streak = 0;
+        const anchor = byDate[today] ? today : dateOffset(today, -1);
+        if (byDate[anchor]) {
+          let check = anchor;
+          while (byDate[check]) { streak++; check = dateOffset(check, -1); }
+        }
+
+        // This week (Mon–today) vs last full week (Mon–Sun)
+        const weekStart     = getWeekStart(today);
+        const lastWeekStart = dateOffset(weekStart, -7);
+        const lastWeekEnd   = dateOffset(weekStart, -1);
+
+        const thisWeekTotal = allEntries
+          .filter(e => e.date >= weekStart && e.date <= today)
+          .reduce((sum, e) => sum + e.count, 0);
+
+        const lastWeekTotal = allEntries
+          .filter(e => e.date >= lastWeekStart && e.date <= lastWeekEnd)
+          .reduce((sum, e) => sum + e.count, 0);
+
+        const last7 = Array.from({ length: 7 }, (_, i) => {
+          const date = dateOffset(today, -(6 - i));
+          return { date, total: byDate[date] || 0 };
+        });
+
+        return { allTimeTotal, streak, bestDay, thisWeekTotal, lastWeekTotal, last7 };
+      }
+
+      function renderStats() {
+        const { allTimeTotal, streak, bestDay, thisWeekTotal, lastWeekTotal, last7 } =
+          computeStats(loadAllEntries());
+
+        document.getElementById('statStreak').textContent   = streak;
+        document.getElementById('statAllTime').textContent  = allTimeTotal.toLocaleString();
+        document.getElementById('statBest').textContent     = bestDay;
+        document.getElementById('statThisWeek').textContent = thisWeekTotal;
+
+        const deltaEl = document.getElementById('statWeekDelta');
+        const delta   = thisWeekTotal - lastWeekTotal;
+        if (lastWeekTotal === 0 && thisWeekTotal === 0) {
+          deltaEl.textContent = '';
+          deltaEl.className   = 'stat-delta';
+        } else if (lastWeekTotal === 0) {
+          deltaEl.textContent = 'first week!';
+          deltaEl.className   = 'stat-delta up';
+        } else {
+          deltaEl.textContent = `${delta >= 0 ? '+' : ''}${delta} vs last wk`;
+          deltaEl.className   = `stat-delta ${delta >= 0 ? 'up' : 'down'}`;
+        }
+
+        const today      = getLocalDate();
+        const max        = Math.max(...last7.map(d => d.total), 1);
+        const dayLetters = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+        document.getElementById('chartBars').innerHTML = last7.map(({ date, total }) => {
+          const [y, m, d] = date.split('-').map(Number);
+          const isToday = date === today;
+          const h = total > 0 ? Math.max(Math.round((total / max) * 88), 6) : 0;
+          return `<div class="bar-col">
+            <div class="bar-count${isToday ? ' today' : ''}">${total > 0 ? total : ''}</div>
+            <div class="bar${isToday ? ' today' : ''}" style="height:${h}px"></div>
+          </div>`;
+        }).join('');
+
+        document.getElementById('chartDays').innerHTML = last7.map(({ date }) => {
+          const [y, m, d] = date.split('-').map(Number);
+          const isToday = date === today;
+          const day = dayLetters[new Date(y, m - 1, d).getDay()];
+          return `<div class="bar-day-label${isToday ? ' today' : ''}">${day}</div>`;
+        }).join('');
+      }
+
+      // ── Tabs ──
+      let activeTab = 'today';
+
+      function switchTab(tab) {
+        activeTab = tab;
+        document.getElementById('todayView').style.display = tab === 'today' ? '' : 'none';
+        document.getElementById('statsView').style.display = tab === 'stats' ? '' : 'none';
+        document.getElementById('tabToday').classList.toggle('active', tab === 'today');
+        document.getElementById('tabStats').classList.toggle('active', tab === 'stats');
+        if (tab === 'stats') renderStats();
+      }
+
+      document.getElementById('tabToday').addEventListener('click', () => switchTab('today'));
+      document.getElementById('tabStats').addEventListener('click', () => switchTab('stats'));
 
       // ── Toast ──
       let toastTimer;
@@ -640,16 +895,14 @@
 
       // ── Render ──
       function render() {
-        const today = getLocalDate();
+        const today   = getLocalDate();
         todayDateEl.textContent = formatDate(today);
 
         const entries = getTodayEntries();
-        const total = entries.reduce((sum, e) => sum + e.count, 0);
+        const total   = entries.reduce((sum, e) => sum + e.count, 0);
 
-        totalCountEl.textContent = total;
-        sessionCountEl.textContent = entries.length === 1
-          ? '1 set'
-          : `${entries.length} sets`;
+        totalCountEl.textContent  = total;
+        sessionCountEl.textContent = entries.length === 1 ? '1 set' : `${entries.length} sets`;
 
         if (entries.length === 0) {
           sessionsList.innerHTML = '';
@@ -659,10 +912,7 @@
         }
 
         emptyState.style.display = 'none';
-
-        // Show most recent first
-        const sorted = [...entries].reverse();
-        sessionsList.innerHTML = sorted.map(entry => `
+        sessionsList.innerHTML = [...entries].reverse().map(entry => `
           <li class="session-item" data-id="${entry.id}">
             <span class="session-count-val">${entry.count}</span>
             <div class="session-right">
@@ -676,51 +926,31 @@
       // ── Actions ──
       function handleAdd() {
         const val = parseInt(repInput.value, 10);
-        if (!val || val <= 0) {
-          repInput.focus();
-          return;
-        }
-
+        if (!val || val <= 0) { repInput.focus(); return; }
         addEntry(val);
         repInput.value = '';
         repInput.focus();
-
-        // Bump animation
         totalCountEl.classList.add('bump');
         setTimeout(() => totalCountEl.classList.remove('bump'), 150);
-
         showToast(`+${val}`);
         render();
       }
 
       window._deleteEntry = function(id) {
         const entry = loadAllEntries().find(e => e.id === id);
-        if (entry) {
-          deleteEntry(id);
-          showToast(`−${entry.count}`);
-          render();
-        }
+        if (entry) { deleteEntry(id); showToast(`−${entry.count}`); render(); }
       };
 
       // ── Events ──
       addBtn.addEventListener('click', handleAdd);
 
       repInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          handleAdd();
-        }
+        if (e.key === 'Enter') { e.preventDefault(); handleAdd(); }
       });
 
-      // Prevent zoom on double-tap of button
-      addBtn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        handleAdd();
-      });
+      addBtn.addEventListener('touchend', (e) => { e.preventDefault(); handleAdd(); });
 
-      // Block all horizontal swipes; allow vertical scroll only in sessions list
-      let touchStartX = 0;
-      let touchStartY = 0;
+      let touchStartX = 0, touchStartY = 0;
       document.addEventListener('touchstart', (e) => {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
@@ -729,24 +959,23 @@
       document.addEventListener('touchmove', (e) => {
         const dx = Math.abs(e.touches[0].clientX - touchStartX);
         const dy = Math.abs(e.touches[0].clientY - touchStartY);
-        const sessionsEl = document.querySelector('.sessions-section');
-        const inSessions = sessionsEl.contains(e.target);
-
-        if (!inSessions || dx > dy) {
-          e.preventDefault();
-        }
+        const inScrollable = [
+          document.querySelector('.sessions-section'),
+          document.getElementById('statsView'),
+        ].some(el => el && el.contains(e.target));
+        if (!inScrollable || dx > dy) e.preventDefault();
       }, { passive: false });
 
-      // Re-render when app comes to foreground (handles date change across midnight)
       document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') render();
+        if (document.visibilityState !== 'visible') return;
+        if (activeTab === 'today') render();
+        else renderStats();
       });
 
       // ── Init ──
       render();
       repInput.focus();
 
-      // ── Service Worker ──
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(() => {});
       }

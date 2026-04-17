@@ -60,7 +60,7 @@ The SW caches all assets under a versioned cache name (`pressups-v1`). When maki
 
 - **Phase 1** ✅ Core tracker (number input, sessions list, daily total, PWA)
 - **Phase 3** ✅ Google Sheets sync (write-through from localStorage to a private Sheet). Tackled before Phase 2 because history/trends need real data across days.
-- **Phase 2**: History & trends (past days list, bar chart, calendar heatmap, streaks) — now builds on top of the Sheets-backed data.
+- **Phase 2** ✅ History & trends (streak, all-time total, best day, this week vs last week, 7-day bar chart) — built on top of the Sheets-backed data.
 - **Phase 4**: Polish (milestones, weekly summaries, export, daily target ring)
 
 ## Sheets sync notes
