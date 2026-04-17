@@ -471,6 +471,69 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+
+    /* ── Muscleman ── */
+    .mm-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mm-wrap {
+      display: none;
+    }
+
+    .mm-wrap.show {
+      display: block;
+      animation: mmFadeInOut 2.2s ease forwards;
+    }
+
+    .mm-figure {
+      width: 260px;
+      animation: mmPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .mm-figure svg {
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    .mm-bicep-l, .mm-bicep-r {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: mmPulse 0.38s ease-in-out infinite alternate;
+    }
+
+    .mm-bicep-r { animation-delay: 0.19s; }
+
+    .mm-lines { animation: mmFlash 0.38s ease-in-out infinite alternate; }
+
+    @keyframes mmFadeInOut {
+      0%   { opacity: 0; }
+      12%  { opacity: 1; }
+      72%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @keyframes mmPop {
+      0%   { transform: scale(0.15) rotate(-12deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    @keyframes mmPulse {
+      from { transform: scale(1); }
+      to   { transform: scale(1.22); }
+    }
+
+    @keyframes mmFlash {
+      from { opacity: 0.3; }
+      to   { opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -535,6 +598,68 @@
       <div class="chart-title">Last 7 days</div>
       <div class="chart-bars" id="chartBars"></div>
       <div class="chart-days" id="chartDays"></div>
+    </div>
+  </div>
+
+  <div class="mm-overlay">
+    <div id="mmWrap" class="mm-wrap">
+      <div class="mm-figure">
+        <svg viewBox="-22 0 284 210" xmlns="http://www.w3.org/2000/svg">
+          <!-- Power lines left -->
+          <g class="mm-lines">
+            <line x1="-8" y1="52" x2="-20" y2="43" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+            <line x1="-12" y1="74" x2="-24" y2="74" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+            <line x1="-8" y1="96" x2="-20" y2="105" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+          </g>
+          <!-- Power lines right -->
+          <g class="mm-lines" style="animation-delay:0.19s">
+            <line x1="248" y1="52" x2="260" y2="43" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+            <line x1="252" y1="74" x2="264" y2="74" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+            <line x1="248" y1="96" x2="260" y2="105" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+          </g>
+          <!-- Legs -->
+          <rect x="72" y="120" width="38" height="62" rx="12" fill="#1e293b"/>
+          <rect x="130" y="120" width="38" height="62" rx="12" fill="#1e293b"/>
+          <!-- Torso (wide V-shape) -->
+          <polygon points="28,64 212,64 190,124 50,124" fill="#10b981"/>
+          <ellipse cx="84" cy="88" rx="28" ry="22" fill="#059669" opacity="0.35"/>
+          <ellipse cx="156" cy="88" rx="28" ry="22" fill="#059669" opacity="0.35"/>
+          <!-- Left upper arm connector -->
+          <rect x="-2" y="60" width="36" height="20" rx="10" fill="#fcd9a0"/>
+          <!-- LEFT BICEP — comically enormous -->
+          <circle class="mm-bicep-l" cx="15" cy="76" r="33" fill="#fcd9a0"/>
+          <ellipse cx="8" cy="67" rx="15" ry="11" fill="#f59e0b" opacity="0.45"/>
+          <!-- Left forearm (raised) -->
+          <rect x="6" y="27" width="18" height="47" rx="9" fill="#fcd9a0"/>
+          <!-- Left fist -->
+          <rect x="4" y="14" width="22" height="18" rx="7" fill="#fcd9a0"/>
+          <!-- Right upper arm connector -->
+          <rect x="206" y="60" width="36" height="20" rx="10" fill="#fcd9a0"/>
+          <!-- RIGHT BICEP — comically enormous -->
+          <circle class="mm-bicep-r" cx="225" cy="76" r="33" fill="#fcd9a0"/>
+          <ellipse cx="232" cy="67" rx="15" ry="11" fill="#f59e0b" opacity="0.45"/>
+          <!-- Right forearm (raised) -->
+          <rect x="216" y="27" width="18" height="47" rx="9" fill="#fcd9a0"/>
+          <!-- Right fist -->
+          <rect x="214" y="14" width="22" height="18" rx="7" fill="#fcd9a0"/>
+          <!-- Neck -->
+          <rect x="105" y="52" width="30" height="16" rx="8" fill="#fcd9a0"/>
+          <!-- Head (small for comedy) -->
+          <circle cx="120" cy="34" r="28" fill="#fcd9a0"/>
+          <!-- Happy squinting eyes -->
+          <path d="M 106 28 Q 111 22 116 28" stroke="#0f172a" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+          <path d="M 124 28 Q 129 22 134 28" stroke="#0f172a" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+          <!-- Big grin -->
+          <path d="M 103 41 Q 120 59 137 41" stroke="#0f172a" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+          <!-- Teeth -->
+          <path d="M 107 44 Q 120 54 133 44" fill="white" opacity="0.65"/>
+          <!-- Rosy cheeks -->
+          <circle cx="101" cy="42" r="8" fill="#f87171" opacity="0.3"/>
+          <circle cx="139" cy="42" r="8" fill="#f87171" opacity="0.3"/>
+          <!-- Sweat drop (effort!) -->
+          <path d="M 146 18 Q 151 8 156 18 Q 156 27 151 28 Q 146 27 146 18" fill="#7dd3fc" opacity="0.85"/>
+        </svg>
+      </div>
     </div>
   </div>
 
@@ -956,6 +1081,17 @@
         `).join('');
       }
 
+      // ── Muscleman ──
+      let mmTimer;
+      function showMuscleman() {
+        const wrap = document.getElementById('mmWrap');
+        clearTimeout(mmTimer);
+        wrap.classList.remove('show');
+        void wrap.offsetWidth; // restart animation
+        wrap.classList.add('show');
+        mmTimer = setTimeout(() => wrap.classList.remove('show'), 2300);
+      }
+
       // ── Actions ──
       function handleAdd() {
         const val = parseInt(repInput.value, 10);
@@ -966,6 +1102,7 @@
         totalCountEl.classList.add('bump');
         setTimeout(() => totalCountEl.classList.remove('bump'), 150);
         showToast(`+${val}`);
+        showMuscleman();
         render();
       }
 
