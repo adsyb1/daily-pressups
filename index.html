@@ -506,12 +506,12 @@
     .mm-bicep-l, .mm-bicep-r {
       transform-box: fill-box;
       transform-origin: center;
-      animation: mmPulse 0.38s ease-in-out infinite alternate;
+      animation: mmPulse 0.38s steps(3) infinite alternate;
     }
 
     .mm-bicep-r { animation-delay: 0.19s; }
 
-    .mm-lines { animation: mmFlash 0.38s ease-in-out infinite alternate; }
+    .mm-lines { animation: mmFlash 0.3s steps(2) infinite alternate; }
 
     @keyframes mmFadeInOut {
       0%   { opacity: 0; }
@@ -527,11 +527,11 @@
 
     @keyframes mmPulse {
       from { transform: scale(1); }
-      to   { transform: scale(1.22); }
+      to   { transform: scale(1.25); }
     }
 
     @keyframes mmFlash {
-      from { opacity: 0.3; }
+      from { opacity: 0.2; }
       to   { opacity: 1; }
     }
   </style>
@@ -604,60 +604,105 @@
   <div class="mm-overlay">
     <div id="mmWrap" class="mm-wrap">
       <div class="mm-figure">
-        <svg viewBox="-22 0 284 210" xmlns="http://www.w3.org/2000/svg">
-          <!-- Power lines left -->
+        <svg viewBox="0 0 192 248" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+          <!-- 8-bit pixel art muscleman | pixel=8px | double-bicep flex -->
+
+          <!-- Pixel sparks L -->
           <g class="mm-lines">
-            <line x1="-8" y1="52" x2="-20" y2="43" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
-            <line x1="-12" y1="74" x2="-24" y2="74" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
-            <line x1="-8" y1="96" x2="-20" y2="105" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+            <rect x="0"  y="32" width="8" height="8" fill="#ffd700"/>
+            <rect x="8"  y="48" width="8" height="8" fill="#ffd700"/>
+            <rect x="0"  y="64" width="8" height="8" fill="#ffd700"/>
           </g>
-          <!-- Power lines right -->
+          <!-- Pixel sparks R -->
           <g class="mm-lines" style="animation-delay:0.19s">
-            <line x1="248" y1="52" x2="260" y2="43" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
-            <line x1="252" y1="74" x2="264" y2="74" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
-            <line x1="248" y1="96" x2="260" y2="105" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+            <rect x="184" y="32" width="8" height="8" fill="#ffd700"/>
+            <rect x="176" y="48" width="8" height="8" fill="#ffd700"/>
+            <rect x="184" y="64" width="8" height="8" fill="#ffd700"/>
           </g>
-          <!-- Legs -->
-          <rect x="72" y="120" width="38" height="62" rx="12" fill="#1e293b"/>
-          <rect x="130" y="120" width="38" height="62" rx="12" fill="#1e293b"/>
-          <!-- Torso (wide V-shape) -->
-          <polygon points="28,64 212,64 190,124 50,124" fill="#10b981"/>
-          <ellipse cx="84" cy="88" rx="28" ry="22" fill="#059669" opacity="0.35"/>
-          <ellipse cx="156" cy="88" rx="28" ry="22" fill="#059669" opacity="0.35"/>
-          <!-- Left upper arm connector -->
-          <rect x="-2" y="60" width="36" height="20" rx="10" fill="#fcd9a0"/>
-          <!-- LEFT BICEP — comically enormous -->
-          <circle class="mm-bicep-l" cx="15" cy="76" r="33" fill="#fcd9a0"/>
-          <ellipse cx="8" cy="67" rx="15" ry="11" fill="#f59e0b" opacity="0.45"/>
-          <!-- Left forearm (raised) -->
-          <rect x="6" y="27" width="18" height="47" rx="9" fill="#fcd9a0"/>
-          <!-- Left fist -->
-          <rect x="4" y="14" width="22" height="18" rx="7" fill="#fcd9a0"/>
-          <!-- Right upper arm connector -->
-          <rect x="206" y="60" width="36" height="20" rx="10" fill="#fcd9a0"/>
-          <!-- RIGHT BICEP — comically enormous -->
-          <circle class="mm-bicep-r" cx="225" cy="76" r="33" fill="#fcd9a0"/>
-          <ellipse cx="232" cy="67" rx="15" ry="11" fill="#f59e0b" opacity="0.45"/>
-          <!-- Right forearm (raised) -->
-          <rect x="216" y="27" width="18" height="47" rx="9" fill="#fcd9a0"/>
-          <!-- Right fist -->
-          <rect x="214" y="14" width="22" height="18" rx="7" fill="#fcd9a0"/>
-          <!-- Neck -->
-          <rect x="105" y="52" width="30" height="16" rx="8" fill="#fcd9a0"/>
-          <!-- Head (small for comedy) -->
-          <circle cx="120" cy="34" r="28" fill="#fcd9a0"/>
-          <!-- Happy squinting eyes -->
-          <path d="M 106 28 Q 111 22 116 28" stroke="#0f172a" stroke-width="2.8" fill="none" stroke-linecap="round"/>
-          <path d="M 124 28 Q 129 22 134 28" stroke="#0f172a" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+
+          <!-- BOOTS -->
+          <rect x="56"  y="232" width="40" height="16" fill="#121220"/>
+          <rect x="96"  y="232" width="40" height="16" fill="#121220"/>
+          <rect x="64"  y="232" width="16" height="8"  fill="#2a2a40"/>
+          <rect x="112" y="232" width="16" height="8"  fill="#2a2a40"/>
+
+          <!-- LEGS -->
+          <rect x="64" y="192" width="24" height="40" fill="#1a3c8e"/>
+          <rect x="96" y="192" width="24" height="40" fill="#1a3c8e"/>
+          <rect x="88" y="192" width="8"  height="40" fill="#0f172a"/>
+          <rect x="80" y="200" width="8"  height="24" fill="#0f2a70" opacity="0.45"/>
+          <rect x="96" y="200" width="8"  height="24" fill="#0f2a70" opacity="0.45"/>
+
+          <!-- PANTS -->
+          <rect x="72" y="176" width="48" height="16" fill="#1a3c8e"/>
+
+          <!-- BELT -->
+          <rect x="72"  y="168" width="48" height="8"  fill="#7a4c08"/>
+          <rect x="88"  y="168" width="16" height="8"  fill="#ffd700"/>
+          <rect x="92"  y="168" width="8"  height="8"  fill="#c8a000"/>
+
+          <!-- SHIRT — stepped V-taper silhouette -->
+          <rect x="48"  y="104" width="96" height="8"  fill="#00b055"/>
+          <rect x="56"  y="112" width="80" height="8"  fill="#00b055"/>
+          <rect x="64"  y="120" width="64" height="16" fill="#00b055"/>
+          <rect x="64"  y="136" width="64" height="16" fill="#00b055"/>
+          <rect x="72"  y="152" width="48" height="16" fill="#00b055"/>
+          <!-- Centre muscle line -->
+          <rect x="92"  y="120" width="8"  height="32" fill="#009044"/>
+          <!-- Ab definition blocks -->
+          <rect x="72"  y="128" width="16" height="8"  fill="#009044" opacity="0.5"/>
+          <rect x="104" y="128" width="16" height="8"  fill="#009044" opacity="0.5"/>
+          <rect x="72"  y="144" width="16" height="8"  fill="#009044" opacity="0.5"/>
+          <rect x="104" y="144" width="16" height="8"  fill="#009044" opacity="0.5"/>
+
+          <!-- LEFT BICEP (animated) -->
+          <g class="mm-bicep-l">
+            <rect x="0"  y="72"  width="56" height="48" fill="#f5c07a"/>
+            <rect x="8"  y="80"  width="24" height="16" fill="#fad090"/>
+            <rect x="0"  y="112" width="56" height="8"  fill="#e8a855"/>
+          </g>
+
+          <!-- RIGHT BICEP (animated) -->
+          <g class="mm-bicep-r">
+            <rect x="136" y="72"  width="56" height="48" fill="#f5c07a"/>
+            <rect x="160" y="80"  width="24" height="16" fill="#fad090"/>
+            <rect x="136" y="112" width="56" height="8"  fill="#e8a855"/>
+          </g>
+
+          <!-- LEFT FOREARM + FIST (drawn on top of bicep) -->
+          <rect x="48" y="16" width="16" height="64" fill="#f5c07a"/>
+          <rect x="48" y="0"  width="16" height="16" fill="#f5c07a"/>
+          <rect x="48" y="0"  width="16" height="8"  fill="#e8a855"/>
+          <rect x="48" y="0"  width="8"  height="8"  fill="#f5c07a"/>
+
+          <!-- RIGHT FOREARM + FIST -->
+          <rect x="128" y="16" width="16" height="64" fill="#f5c07a"/>
+          <rect x="128" y="0"  width="16" height="16" fill="#f5c07a"/>
+          <rect x="128" y="0"  width="16" height="8"  fill="#e8a855"/>
+          <rect x="136" y="0"  width="8"  height="8"  fill="#f5c07a"/>
+
+          <!-- COLLAR / SHOULDER SKIN -->
+          <rect x="64"  y="88" width="64" height="8"  fill="#f5c07a"/>
+          <!-- NECK -->
+          <rect x="80"  y="96" width="32" height="8"  fill="#f5c07a"/>
+
+          <!-- HAIR -->
+          <rect x="64"  y="0"  width="64" height="24" fill="#3d1f0a"/>
+
+          <!-- FACE -->
+          <rect x="64"  y="24" width="64" height="64" fill="#f5c07a"/>
+
+          <!-- Eyes (dark with corner shine) -->
+          <rect x="72"  y="40" width="16" height="16" fill="#181818"/>
+          <rect x="104" y="40" width="16" height="16" fill="#181818"/>
+          <rect x="72"  y="40" width="8"  height="8"  fill="#e8e8e8"/>
+          <rect x="104" y="40" width="8"  height="8"  fill="#e8e8e8"/>
+
           <!-- Big grin -->
-          <path d="M 103 41 Q 120 59 137 41" stroke="#0f172a" stroke-width="2.8" fill="none" stroke-linecap="round"/>
-          <!-- Teeth -->
-          <path d="M 107 44 Q 120 54 133 44" fill="white" opacity="0.65"/>
-          <!-- Rosy cheeks -->
-          <circle cx="101" cy="42" r="8" fill="#f87171" opacity="0.3"/>
-          <circle cx="139" cy="42" r="8" fill="#f87171" opacity="0.3"/>
-          <!-- Sweat drop (effort!) -->
-          <path d="M 146 18 Q 151 8 156 18 Q 156 27 151 28 Q 146 27 146 18" fill="#7dd3fc" opacity="0.85"/>
+          <rect x="72"  y="72" width="48" height="8"  fill="#181818"/>
+          <rect x="72"  y="80" width="8"  height="8"  fill="#181818"/>
+          <rect x="112" y="80" width="8"  height="8"  fill="#181818"/>
+          <rect x="80"  y="80" width="32" height="8"  fill="#f0f0f0"/>
         </svg>
       </div>
     </div>
