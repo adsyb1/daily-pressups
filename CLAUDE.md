@@ -12,8 +12,9 @@ Adam. He does pressups across multiple sessions throughout the day and needs a q
 
 - **Single-file app**: `index.html` contains all HTML, CSS, and JS inline. No build step, no bundler.
 - **No frameworks**: Vanilla HTML/CSS/JS only.
-- **Data storage**: Browser localStorage under key `daily-pressups-v1`. Flat array of entry objects.
-- **PWA**: `manifest.json` + `sw.js` for home screen install and offline use on iOS Safari.
+- **Data storage**: localStorage is the source of truth for the UI (key `daily-pressups-v1`). When signed in to Google, changes sync to a Google Sheet (Sheets API v4). Sheet ID persists under `daily-pressups-sheet-id`.
+- **Auth**: Google Identity Services (`accounts.google.com/gsi/client`) with OAuth client ID embedded in the page (safe — protected by Authorized JavaScript Origins in Google Cloud Console). Scope: `drive.file` — app only sees files it created.
+- **PWA**: `manifest.json` + `sw.js` for home screen install and offline use on iOS Safari. SW skips caching for Google domains.
 - **Hosting**: GitHub Pages at `https://<username>.github.io/daily-pressups/`
 - **Fonts**: DM Mono (numbers/labels) and DM Sans (body) loaded from Google Fonts.
 
@@ -58,9 +59,16 @@ The SW caches all assets under a versioned cache name (`pressups-v1`). When maki
 ## Planned phases
 
 - **Phase 1** ✅ Core tracker (number input, sessions list, daily total, PWA)
-- **Phase 2**: History & trends (past days list, bar chart, calendar heatmap, streaks)
-- **Phase 3**: Google Sheets sync (replace localStorage with Sheets API backend)
+- **Phase 3** ✅ Google Sheets sync (write-through from localStorage to a private Sheet). Tackled before Phase 2 because history/trends need real data across days.
+- **Phase 2**: History & trends (past days list, bar chart, calendar heatmap, streaks) — now builds on top of the Sheets-backed data.
 - **Phase 4**: Polish (milestones, weekly summaries, export, daily target ring)
+
+## Sheets sync notes
+
+- Spreadsheet is named "Daily Pressups" with a single sheet "Entries" (columns: id, count, timestamp, date).
+- Writes are optimistic: localStorage updates immediately, Sheets is updated in the background. Sync status is shown in the small top-right button.
+- `drive.file` scope means the app can only see files it has created. If the stored sheet ID is lost from localStorage, the app will create a new sheet on next sign-in; users can manually delete any orphaned sheets.
+- Tokens are held in memory only (1h lifetime). Silent refresh is attempted on load; otherwise the user taps "connect".
 
 ## Style guide
 

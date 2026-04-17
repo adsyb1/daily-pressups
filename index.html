@@ -13,6 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     *, *::before, *::after {
       margin: 0;
@@ -66,6 +67,7 @@
     header {
       padding: 20px 20px 0;
       text-align: center;
+      position: relative;
     }
 
     header h1 {
@@ -76,6 +78,28 @@
       letter-spacing: 3px;
       color: var(--slate-500);
     }
+
+    .sync-btn {
+      position: absolute;
+      top: 18px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--slate-700);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: color 0.2s ease;
+    }
+
+    .sync-btn:active { background: var(--slate-900); }
+    .sync-btn.synced { color: var(--emerald-500); }
+    .sync-btn.syncing { color: var(--amber-400); }
+    .sync-btn.error { color: var(--red-400); }
 
     /* ── Today total ── */
     .today-total {
@@ -297,6 +321,7 @@
 
   <header>
     <h1>Pressups</h1>
+    <button id="syncBtn" class="sync-btn" aria-label="Connect Google Sheets">connect</button>
   </header>
 
   <div class="today-total">
@@ -327,6 +352,10 @@
   <script>
     (() => {
       const STORAGE_KEY = 'daily-pressups-v1';
+      const SHEET_ID_KEY = 'daily-pressups-sheet-id';
+      const SHEET_TAB_ID_KEY = 'daily-pressups-sheet-tab-id';
+      const CLIENT_ID = '864950086095-8uc416m7ts9hbbmpp0g5dlhd1rjqfs0f.apps.googleusercontent.com';
+      const SCOPE = 'https://www.googleapis.com/auth/drive.file';
 
       // ── Elements ──
       const totalCountEl = document.getElementById('totalCount');
@@ -337,6 +366,7 @@
       const sessionCountEl = document.getElementById('sessionCount');
       const emptyState = document.getElementById('emptyState');
       const toastEl = document.getElementById('toast');
+      const syncBtn = document.getElementById('syncBtn');
 
       // ── Helpers ──
       function getLocalDate() {
@@ -369,7 +399,7 @@
         return Date.now() + '-' + Math.random().toString(36).substring(2, 7);
       }
 
-      // ── Data ──
+      // ── Data (localStorage: source of truth for UI, Sheets: sync target) ──
       function loadAllEntries() {
         try {
           return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
@@ -390,19 +420,203 @@
       function addEntry(count) {
         const entries = loadAllEntries();
         const now = new Date();
-        entries.push({
+        const entry = {
           id: generateId(),
           count: count,
           timestamp: now.toISOString(),
           date: getLocalDate()
-        });
+        };
+        entries.push(entry);
         saveAllEntries(entries);
+        syncAppend(entry);
+        return entry;
       }
 
       function deleteEntry(id) {
         const entries = loadAllEntries().filter(e => e.id !== id);
         saveAllEntries(entries);
+        syncDelete(id);
       }
+
+      // ── Google Sheets sync ──
+      let tokenClient = null;
+      let accessToken = null;
+      let spreadsheetId = localStorage.getItem(SHEET_ID_KEY);
+      let sheetTabId = Number(localStorage.getItem(SHEET_TAB_ID_KEY)) || 0;
+
+      function setSyncState(state) {
+        const labels = {
+          disconnected: 'connect',
+          syncing: 'syncing…',
+          synced: '● synced',
+          error: 'retry',
+        };
+        syncBtn.className = 'sync-btn ' + state;
+        syncBtn.textContent = labels[state] || 'connect';
+      }
+
+      async function sheetsFetch(url, opts = {}) {
+        if (!accessToken) throw new Error('no-token');
+        const res = await fetch(url, {
+          ...opts,
+          headers: {
+            ...(opts.headers || {}),
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        if (res.status === 401) {
+          accessToken = null;
+          throw new Error('auth');
+        }
+        if (!res.ok) throw new Error(`sheets-${res.status}`);
+        return res.status === 204 ? null : res.json();
+      }
+
+      async function createSpreadsheet() {
+        const data = await sheetsFetch('https://sheets.googleapis.com/v4/spreadsheets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            properties: { title: 'Daily Pressups' },
+            sheets: [{
+              properties: { title: 'Entries' },
+              data: [{
+                rowData: [{
+                  values: ['id', 'count', 'timestamp', 'date'].map(h => ({
+                    userEnteredValue: { stringValue: h },
+                    userEnteredFormat: { textFormat: { bold: true } }
+                  }))
+                }]
+              }]
+            }]
+          }),
+        });
+        spreadsheetId = data.spreadsheetId;
+        sheetTabId = data.sheets[0].properties.sheetId;
+        localStorage.setItem(SHEET_ID_KEY, spreadsheetId);
+        localStorage.setItem(SHEET_TAB_ID_KEY, String(sheetTabId));
+      }
+
+      async function readAllFromSheets() {
+        const data = await sheetsFetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Entries!A2:D`
+        );
+        const rows = (data && data.values) || [];
+        return rows.map(([id, count, timestamp, date]) => ({
+          id,
+          count: parseInt(count, 10),
+          timestamp,
+          date,
+        }));
+      }
+
+      async function bulkAppendToSheets(entries) {
+        if (!entries.length) return;
+        await sheetsFetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Entries!A:D:append?valueInputOption=RAW`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              values: entries.map(e => [e.id, e.count, e.timestamp, e.date]),
+            }),
+          }
+        );
+      }
+
+      async function deleteRowFromSheets(id) {
+        const remote = await readAllFromSheets();
+        const idx = remote.findIndex(e => e.id === id);
+        if (idx === -1) return;
+        const rowIndex = idx + 1; // +1 to skip header (0-based)
+        await sheetsFetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              requests: [{
+                deleteDimension: {
+                  range: {
+                    sheetId: sheetTabId,
+                    dimension: 'ROWS',
+                    startIndex: rowIndex,
+                    endIndex: rowIndex + 1,
+                  },
+                },
+              }],
+            }),
+          }
+        );
+      }
+
+      function syncAppend(entry) {
+        if (!accessToken || !spreadsheetId) return;
+        setSyncState('syncing');
+        bulkAppendToSheets([entry])
+          .then(() => setSyncState('synced'))
+          .catch(() => setSyncState('error'));
+      }
+
+      function syncDelete(id) {
+        if (!accessToken || !spreadsheetId) return;
+        setSyncState('syncing');
+        deleteRowFromSheets(id)
+          .then(() => setSyncState('synced'))
+          .catch(() => setSyncState('error'));
+      }
+
+      async function onSignedIn() {
+        setSyncState('syncing');
+        try {
+          if (!spreadsheetId) {
+            await createSpreadsheet();
+            const local = loadAllEntries();
+            if (local.length) await bulkAppendToSheets(local);
+          } else {
+            const remote = await readAllFromSheets();
+            saveAllEntries(remote);
+            render();
+          }
+          setSyncState('synced');
+        } catch (e) {
+          setSyncState('error');
+        }
+      }
+
+      function initGoogleAuth() {
+        if (!window.google || !window.google.accounts) return;
+        tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: CLIENT_ID,
+          scope: SCOPE,
+          callback: (resp) => {
+            if (resp.error || !resp.access_token) {
+              setSyncState('disconnected');
+              return;
+            }
+            accessToken = resp.access_token;
+            onSignedIn();
+          },
+          error_callback: () => setSyncState('disconnected'),
+        });
+        // Try silent auth if we've connected before
+        if (spreadsheetId) {
+          try { tokenClient.requestAccessToken({ prompt: '' }); } catch {}
+        }
+      }
+
+      // Poll for the GIS library to load
+      const gisCheck = setInterval(() => {
+        if (window.google && window.google.accounts) {
+          clearInterval(gisCheck);
+          initGoogleAuth();
+        }
+      }, 100);
+
+      syncBtn.addEventListener('click', () => {
+        if (!tokenClient) return;
+        tokenClient.requestAccessToken({ prompt: accessToken ? '' : 'consent' });
+      });
 
       // ── Toast ──
       let toastTimer;

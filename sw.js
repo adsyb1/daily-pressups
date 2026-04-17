@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pressups-v4';
+const CACHE_NAME = 'pressups-v5';
 const ASSETS = [
   '/daily-pressups/',
   '/daily-pressups/index.html',
@@ -31,6 +31,15 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Skip non-GET and cross-origin requests
   if (event.request.method !== 'GET') return;
+
+  // Never intercept Google auth / API traffic — must always hit the network
+  const url = event.request.url;
+  if (
+    url.includes('accounts.google.com') ||
+    url.includes('googleapis.com') ||
+    url.includes('apis.google.com') ||
+    url.includes('gstatic.com')
+  ) return;
 
   event.respondWith(
     caches.match(event.request).then((cached) => {
