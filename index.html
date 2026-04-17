@@ -687,6 +687,30 @@
         localStorage.setItem(SHEET_TAB_ID_KEY, String(sheetTabId));
       }
 
+      // Search Drive for an existing sheet this app created, and adopt it.
+      // This lets Safari and the home-screen PWA share the same spreadsheet
+      // even though they have separate localStorage.
+      async function findExistingSheet() {
+        const q = encodeURIComponent(
+          "name='Daily Pressups' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false"
+        );
+        const data = await sheetsFetch(
+          `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)&orderBy=modifiedTime+desc&pageSize=1`
+        );
+        if (!data || !data.files || !data.files.length) return false;
+
+        const id = data.files[0].id;
+        const meta = await sheetsFetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${id}?fields=sheets.properties`
+        );
+        const sheet = (meta.sheets || []).find(s => s.properties.title === 'Entries');
+        spreadsheetId = id;
+        sheetTabId    = sheet ? sheet.properties.sheetId : 0;
+        localStorage.setItem(SHEET_ID_KEY, spreadsheetId);
+        localStorage.setItem(SHEET_TAB_ID_KEY, String(sheetTabId));
+        return true;
+      }
+
       async function readAllFromSheets() {
         const data = await sheetsFetch(
           `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Entries!A2:D`
@@ -744,15 +768,18 @@
       async function onSignedIn() {
         setSyncState('syncing');
         try {
-          if (!spreadsheetId) {
-            await createSpreadsheet();
-            const local = loadAllEntries();
-            if (local.length) await bulkAppendToSheets(local);
-          } else {
+          const found = await findExistingSheet();
+          if (found) {
+            // Adopt the existing sheet — pull down canonical data
             const remote = await readAllFromSheets();
             saveAllEntries(remote);
             render();
             if (activeTab === 'stats') renderStats();
+          } else {
+            // First time ever — create sheet and upload any local data
+            await createSpreadsheet();
+            const local = loadAllEntries();
+            if (local.length) await bulkAppendToSheets(local);
           }
           setSyncState('synced');
         } catch {
@@ -772,9 +799,9 @@
           },
           error_callback: () => setSyncState('disconnected'),
         });
-        if (spreadsheetId) {
-          try { tokenClient.requestAccessToken({ prompt: '' }); } catch {}
-        }
+        // Always attempt silent auth — works even when this context has no
+        // cached sheet ID (e.g. PWA vs Safari having separate localStorage)
+        try { tokenClient.requestAccessToken({ prompt: '' }); } catch {}
       }
 
       const gisCheck = setInterval(() => {
