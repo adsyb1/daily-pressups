@@ -512,6 +512,11 @@
         }
       }, { passive: false });
 
+      // Re-render when app comes to foreground (handles date change across midnight)
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') render();
+      });
+
       // ── Init ──
       render();
       repInput.focus();
