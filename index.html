@@ -690,25 +690,31 @@
       // Search Drive for an existing sheet this app created, and adopt it.
       // This lets Safari and the home-screen PWA share the same spreadsheet
       // even though they have separate localStorage.
+      // Falls back to cached localStorage ID if Drive API is unavailable.
       async function findExistingSheet() {
-        const q = encodeURIComponent(
-          "name='Daily Pressups' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false"
-        );
-        const data = await sheetsFetch(
-          `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)&orderBy=modifiedTime+desc&pageSize=1`
-        );
-        if (!data || !data.files || !data.files.length) return false;
-
-        const id = data.files[0].id;
-        const meta = await sheetsFetch(
-          `https://sheets.googleapis.com/v4/spreadsheets/${id}?fields=sheets.properties`
-        );
-        const sheet = (meta.sheets || []).find(s => s.properties.title === 'Entries');
-        spreadsheetId = id;
-        sheetTabId    = sheet ? sheet.properties.sheetId : 0;
-        localStorage.setItem(SHEET_ID_KEY, spreadsheetId);
-        localStorage.setItem(SHEET_TAB_ID_KEY, String(sheetTabId));
-        return true;
+        try {
+          const q = encodeURIComponent(
+            "name='Daily Pressups' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false"
+          );
+          const data = await sheetsFetch(
+            `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)&orderBy=modifiedTime+desc&pageSize=1`
+          );
+          if (data && data.files && data.files.length) {
+            const id = data.files[0].id;
+            const meta = await sheetsFetch(
+              `https://sheets.googleapis.com/v4/spreadsheets/${id}?fields=sheets.properties`
+            );
+            const sheet = (meta.sheets || []).find(s => s.properties.title === 'Entries');
+            spreadsheetId = id;
+            sheetTabId    = sheet ? sheet.properties.sheetId : 0;
+            localStorage.setItem(SHEET_ID_KEY, spreadsheetId);
+            localStorage.setItem(SHEET_TAB_ID_KEY, String(sheetTabId));
+            return true;
+          }
+        } catch {
+          // Drive API not enabled — fall back to cached sheet ID
+        }
+        return !!spreadsheetId;
       }
 
       async function readAllFromSheets() {
