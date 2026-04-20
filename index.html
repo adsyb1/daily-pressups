@@ -545,6 +545,8 @@
       const STORAGE_KEY      = 'daily-pressups-v1';
       const SHEET_ID_KEY     = 'daily-pressups-sheet-id';
       const SHEET_TAB_ID_KEY = 'daily-pressups-sheet-tab-id';
+      const TOKEN_KEY        = 'daily-pressups-token';
+      const TOKEN_EXPIRY_KEY = 'daily-pressups-token-expiry';
       const CLIENT_ID        = '864950086095-8uc416m7ts9hbbmpp0g5dlhd1rjqfs0f.apps.googleusercontent.com';
       const SCOPE            = 'https://www.googleapis.com/auth/drive.file';
 
@@ -661,7 +663,12 @@
           ...opts,
           headers: { ...(opts.headers || {}), Authorization: `Bearer ${accessToken}` },
         });
-        if (res.status === 401) { accessToken = null; throw new Error('auth'); }
+        if (res.status === 401) {
+          accessToken = null;
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(TOKEN_EXPIRY_KEY);
+          throw new Error('auth');
+        }
         if (!res.ok) throw new Error(`sheets-${res.status}`);
         return res.status === 204 ? null : res.json();
       }
@@ -801,12 +808,25 @@
           callback: (resp) => {
             if (resp.error || !resp.access_token) { setSyncState('disconnected'); return; }
             accessToken = resp.access_token;
+            // Persist token so it survives app restarts within its 1h lifetime
+            const expiresAt = Date.now() + ((resp.expires_in || 3600) - 60) * 1000;
+            localStorage.setItem(TOKEN_KEY, accessToken);
+            localStorage.setItem(TOKEN_EXPIRY_KEY, String(expiresAt));
             onSignedIn();
           },
           error_callback: () => setSyncState('disconnected'),
         });
-        // Always attempt silent auth — works even when this context has no
-        // cached sheet ID (e.g. PWA vs Safari having separate localStorage)
+
+        // Restore a cached token if still valid — avoids reconnect on every open
+        const cachedToken  = localStorage.getItem(TOKEN_KEY);
+        const cachedExpiry = Number(localStorage.getItem(TOKEN_EXPIRY_KEY));
+        if (cachedToken && cachedExpiry > Date.now()) {
+          accessToken = cachedToken;
+          spreadsheetId ? setSyncState('synced') : onSignedIn();
+          return;
+        }
+
+        // Fall back to GIS silent refresh (works in desktop Chrome; blocked by iOS ITP)
         try { tokenClient.requestAccessToken({ prompt: '' }); } catch {}
       }
 
